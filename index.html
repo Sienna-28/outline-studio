@@ -98,7 +98,7 @@
         <div class="actions"><button id="generate">Generate my outline</button><button class="secondary" id="demo">Load example</button></div><p class="privacy">Your rubric and outlines are stored only in this browser unless you choose to download them.</p><p class="empty-note" id="message"></p>
       </section>
       <section class="panel output-panel">
-        <div class="output-head"><div><h2>Your Editable Outline</h2><p>Click anywhere in the document to revise it.</p></div><div class="actions" style="margin:0"><button class="secondary" id="copy">Copy</button><button class="secondary" id="chatReview">Review in ChatGPT</button><button class="secondary" id="download">Download Word</button><button class="secondary" id="print">Print / PDF</button></div></div><div class="progress-card" id="progressCard" hidden><div class="progress-top"><span>Rubric coverage</span><span id="progressCount">0 of 0</span></div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><p class="progress-copy" id="progressCopy">Mark a requirement when your outline addresses it.</p></div>
+        <div class="output-head"><div><h2>Your Editable Outline</h2><p>Click anywhere in the document to revise it.</p></div><div class="actions" style="margin:0"><button class="secondary" id="copy">Copy</button><button class="secondary" id="chatReview">Copy Review Prompt</button><button class="secondary" id="download">Download Word</button><button class="secondary" id="print">Print / PDF</button></div></div><div class="progress-card" id="progressCard" hidden><div class="progress-top"><span>Rubric coverage</span><span id="progressCount">0 of 0</span></div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><p class="progress-copy" id="progressCopy">Mark a requirement when your outline addresses it.</p></div>
         <article id="outline" class="outline" contenteditable="true" aria-label="Editable generated outline"><div class="placeholder">Your outline will appear here.<br>It will include a checklist of every requirement found in your rubric.</div></article>
         <div class="footnote">Use this as a planning tool. Verify requirements against your assignment sheet before submitting work.</div>
       </section>
@@ -183,7 +183,7 @@
     if (!outline || outline.startsWith('Your outline will appear here') || !rubric) { $('message').textContent='Generate an outline first, then ask ChatGPT to review it.'; return; }
     const prompt = `You are an academic planning reviewer. Review the student's OUTLINE against the exact RUBRIC below.
 
-Your job is to assess rubric coverage, not to write the assignment. Do not create paragraphs, thesis statements, analysis, citations, or content for the student to submit. Do not predict a grade.
+Your job is to assess rubric coverage and provide concise, constructive bullet points the student can apply to strengthen their own outline. Do not write the assignment or create paragraphs, thesis statements, analysis, citations, or content for the student to submit. Do not predict a grade.
 
 For every rubric requirement:
 1. Quote or name the requirement.
@@ -192,7 +192,7 @@ For every rubric requirement:
 4. Explain the specific missing planning element when it does not.
 5. Suggest a question the student should answer themselves to improve it.
 
-End with a short "Coverage summary" showing the number of requirements in each category and the 3 most important next revisions.
+End with a short "Coverage summary" showing the number of requirements in each category and the three most important next revisions. Keep feedback professional, specific, and focused on improving the student's own planning.
 
 Assignment type: ${$('assignmentType').selectedOptions[0].text}
 Academic level: ${$('academicLevel').value}
@@ -205,7 +205,7 @@ STUDENT OUTLINE:
 ${outline}`;
     try {
       await navigator.clipboard.writeText(prompt);
-      $('message').textContent='Review prompt copied. Paste it into ChatGPT to get rubric-coverage guidance.';
+      $('message').textContent='Your complete review prompt is copied. In the ChatGPT tab, paste it into the message box and send it for rubric-coverage guidance.';
       window.open('https://chatgpt.com/', '_blank', 'noopener');
     } catch {
       $('message').textContent='Could not copy automatically. Use Copy to copy your outline, then open ChatGPT manually.';
