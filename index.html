@@ -12,7 +12,7 @@
     header { display:flex; justify-content:space-between; align-items:center; gap:22px; padding:0 0 25px; border-bottom:1px solid var(--ink); }
     .brand { font-size:15px; letter-spacing:.09em; font-weight:700; text-transform:uppercase; }
     .brand b { color:var(--red); }
-    .status { color:var(--muted); font-size:13px; }
+    .menu-wrap { position:relative; }\n    .menu-button { width:42px; height:38px; padding:8px; display:grid; place-content:center; gap:4px; background:white; border:1px solid var(--ink); }\n    .menu-button span { display:block; width:20px; height:2px; background:var(--ink); }\n    .menu-button:hover span { background:white; }\n    .menu { display:none; position:absolute; z-index:4; right:0; top:48px; width:285px; padding:20px; background:white; border:1px solid var(--ink); box-shadow:7px 7px 0 #dedad3; }\n    .menu.open { display:block; }\n    .menu h3 { margin:0 0 8px; font:700 12px var(--sans); letter-spacing:.08em; text-transform:uppercase; }\n    .menu select { width:100%; padding:10px; border:1px solid #aaa59e; background:white; font:14px var(--sans); }\n    .menu-note { margin:9px 0 20px; color:var(--muted); font-size:12px; line-height:1.45; }\n    .saved-list { display:grid; gap:8px; max-height:220px; overflow:auto; }\n    .saved-item { width:100%; text-align:left; background:#fff; color:var(--ink); border:1px solid var(--line); padding:10px; font:13px/1.35 var(--sans); }\n    .saved-item:hover { background:#fff7f7; color:var(--red); }\n    .saved-empty { color:var(--muted); font-size:13px; line-height:1.45; }
     .hero { padding:55px 0 42px; display:grid; grid-template-columns:1.2fr .8fr; gap:48px; }
     .eyebrow { color:var(--red); font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
     h1 { margin:13px 0 18px; font:400 clamp(44px,6vw,76px)/.96 var(--serif); max-width:780px; letter-spacing:-.04em; }
@@ -56,9 +56,9 @@
 </head>
 <body>
   <div class="wrap">
-    <header><div class="brand">Outline <b>Studio</b></div><div class="status">Rubric to working outline</div></header>
+    <header><div class="brand">Outline <b>Studio</b></div><div class="menu-wrap"><button class="menu-button" id="menuButton" aria-label="Open assignment options" aria-expanded="false"><span></span><span></span><span></span></button><aside class="menu" id="menu"><h3>Academic level</h3><select id="academicLevel"><option>High school</option><option selected>Undergraduate</option><option>Graduate</option><option>Advanced research</option></select><p class="menu-note">This adjusts the tone prompt in new outlines. Your choices stay on this device.</p><h3>Previous outlines</h3><div class="saved-list" id="savedList"></div></aside></div></header>
     <section class="hero">
-      <div><div class="eyebrow">Build your starting point</div><h1>Turn the rubric into a plan you can write from.</h1><p class="lede">Paste the assignment requirements, add any useful context, and create an organized, editable outline that keeps every requirement in view.</p></div>
+      <div><div class="eyebrow">Build your starting point</div><h1>Turn the Rubric Into a Plan You Can Write From.</h1><p class="lede">Paste the assignment requirements, add any useful context, and create an organized, editable outline that keeps every requirement in view.</p></div>
       <aside class="rules"><h2>Made for academic work</h2><p>Clear structure, neutral formatting, and room for your ideas. The resulting outline stays fully editable, so it can become your own work.</p></aside>
     </section>
     <main class="grid">
@@ -77,17 +77,17 @@
     </main>
   </div>
 <script>
-  const $ = id => document.getElementById(id);
+  const $ = id => document.getElementById(id);\n  const STORAGE_KEY = 'outline-studio-history';\n  const LEVEL_KEY = 'outline-studio-level';\n  function historyItems() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } }\n  function renderHistory() { const items=historyItems(); const list=$('savedList'); list.innerHTML=items.length ? items.map((item,i)=>'<button class="saved-item" data-index="'+i+'"><strong>'+escapeHtml(item.title)+'</strong><br><span>'+escapeHtml(item.level)+' · '+escapeHtml(item.date)+'</span></button>').join('') : '<p class="saved-empty">No outlines saved yet. Generated outlines will appear here.</p>'; list.querySelectorAll('[data-index]').forEach(button=>button.addEventListener('click',()=>loadHistory(Number(button.dataset.index)))); }\n  function saveHistory(title,rubric,context,level) { const items=historyItems(); items.unshift({title,rubric,context,level,date:new Date().toLocaleDateString()}); localStorage.setItem(STORAGE_KEY,JSON.stringify(items.slice(0,8))); renderHistory(); }\n  function loadHistory(index) { const item=historyItems()[index]; if(!item) return; $('title').value=item.title; $('rubric').value=item.rubric; $('context').value=item.context; $('academicLevel').value=item.level; $('menu').classList.remove('open'); $('menuButton').setAttribute('aria-expanded','false'); buildOutline(false); }
   const escapeHtml = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function splitRequirements(text) {
     const lines = text.replace(/\r/g,'').split(/\n+/).flatMap(line => line.split(/(?<=[.!?])\s+(?=[A-Z])/));
     return lines.map(x=>x.trim().replace(/^[-*•\d.)\s]+/,'')).filter(x=>x.length>12).filter((x,i,a)=>a.indexOf(x)===i).slice(0,14);
   }
   function contextPoints(text) { return splitRequirements(text).slice(0,4); }
-  function buildOutline() {
+  function buildOutline(save=true) {
     const title = $('title').value.trim() || 'Untitled assignment';
     const rubric = $('rubric').value.trim();
-    const context = $('context').value.trim();
+    const context = $('context').value.trim();\n    const level = $('academicLevel').value;
     const message = $('message');
     if (!rubric) { message.textContent='Paste the rubric first so the outline can include its requirements.'; $('rubric').focus(); return; }
     const requirements = splitRequirements(rubric);
@@ -95,16 +95,16 @@
     const requirementsHtml = requirements.length ? requirements.map(r=>'<div class="requirement">□ '+escapeHtml(r)+'</div>').join('') : '<div class="requirement">□ Review the rubric and add each requirement here.</div>';
     const contextHtml = details.length ? details.map(d=>'<li>'+escapeHtml(d)+'</li>').join('') : '<li><span class="blank">Add your topic, key claim, evidence, or instructor guidance.</span></li>';
     $('outline').innerHTML = '<h2 class="doc-title">'+escapeHtml(title)+'</h2><p class="doc-subtitle">Working outline. Replace the prompts with your own ideas and evidence.</p>'
-      +'<section class="section"><h3>1. Planning notes</h3><ul>'+contextHtml+'</ul></section>'
+      +'<section class="section"><h3>1. Planning notes</h3><ul><li>Academic level: <strong>'+escapeHtml(level)+'</strong></li>'+contextHtml+'</ul></section>'
       +'<section class="section"><h3>2. Introduction</h3><ul><li>Opening context: <span class="blank">Introduce the topic and why it matters.</span></li><li>Thesis or central claim: <span class="blank">State your position or purpose.</span></li><li>Roadmap: <span class="blank">Preview the main points in the order you will develop them.</span></li></ul></section>'
       +'<section class="section"><h3>3. Main point one</h3><ul><li>Topic sentence: <span class="blank">First reason, theme, or finding.</span></li><li>Evidence or example: <span class="blank">Add a source, quotation, data point, or detail.</span></li><li>Analysis: <span class="blank">Explain how the evidence supports your thesis.</span></li></ul></section>'
       +'<section class="section"><h3>4. Main point two</h3><ul><li>Topic sentence: <span class="blank">Second reason, theme, or finding.</span></li><li>Evidence or example: <span class="blank">Add support.</span></li><li>Analysis: <span class="blank">Connect this point back to your central claim.</span></li></ul></section>'
       +'<section class="section"><h3>5. Main point three or counterpoint</h3><ul><li>Topic sentence: <span class="blank">Add another important point, limitation, or opposing view.</span></li><li>Evidence and response: <span class="blank">Use evidence and explain its significance.</span></li></ul></section>'
       +'<section class="section"><h3>6. Conclusion</h3><ul><li>Synthesize: <span class="blank">Show how the main points work together.</span></li><li>Closing significance: <span class="blank">Leave the reader with the key implication or takeaway.</span></li></ul></section>'
       +'<div class="requirements-title">Rubric requirement checklist</div>'+requirementsHtml;
-    message.textContent = requirements.length ? requirements.length+' requirement'+(requirements.length===1?'':'s')+' added to your checklist.' : 'Outline created. Add the rubric requirements to the checklist.';
+    if (save) saveHistory(title,rubric,context,level);\n    message.textContent = requirements.length ? requirements.length+' requirement'+(requirements.length===1?'':'s')+' added to your checklist.' : 'Outline created. Add the rubric requirements to the checklist.';
   }
-  $('generate').addEventListener('click', buildOutline);
+  $('menuButton').addEventListener('click',()=>{ const open=$('menu').classList.toggle('open'); $('menuButton').setAttribute('aria-expanded',String(open)); });\n  $('academicLevel').value=localStorage.getItem(LEVEL_KEY)||'Undergraduate';\n  $('academicLevel').addEventListener('change',()=>localStorage.setItem(LEVEL_KEY,$('academicLevel').value));\n  renderHistory();\n  $('generate').addEventListener('click', buildOutline);
   $('demo').addEventListener('click', () => { $('title').value='Comparative Literary Analysis'; $('rubric').value='Write a 1,200 to 1,500 word comparative literary analysis. Include a clear thesis in the introduction. Analyze at least two passages from each text. Use three scholarly sources in MLA format. Address a meaningful similarity and difference between the texts. Include a works cited page.'; $('context').value='Texts: Frankenstein and The Strange Case of Dr. Jekyll and Mr. Hyde. Focus: the consequences of unchecked ambition.'; buildOutline(); });
   $('copy').addEventListener('click', async () => { const text=$('outline').innerText; if (!text.trim()) return; await navigator.clipboard.writeText(text); $('copy').textContent='Copied'; setTimeout(()=>$('copy').textContent='Copy outline',1400); });
 </script>
