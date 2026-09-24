@@ -54,6 +54,9 @@
     .output-panel { min-height:670px; display:flex; flex-direction:column; }
     .output-head { display:flex; justify-content:space-between; align-items:start; gap:15px; padding:27px; border-bottom:1px solid var(--line); }
     .output-head p { margin:6px 0 0; color:var(--muted); font-size:13px; }
+    .output-head > .actions { width:100%; margin:18px 0 0 !important; display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:8px; }
+    .output-head > .actions button { min-width:0; padding:10px 8px; font-size:11px; white-space:nowrap; }
+    @media (max-width:560px) { .output-head > .actions { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
     .outline { padding:34px 38px 45px; flex:1; font:16px/1.55 var(--serif); }
     .placeholder { color:var(--muted); font-family:var(--sans); font-size:15px; line-height:1.6; margin-top:140px; text-align:center; }
     .doc-title { font-size:30px; line-height:1.13; margin:0 0 7px; }
@@ -95,7 +98,7 @@
         <div class="actions"><button id="generate">Generate my outline</button><button class="secondary" id="demo">Load example</button></div><p class="privacy">Your rubric and outlines are stored only in this browser unless you choose to download them.</p><p class="empty-note" id="message"></p>
       </section>
       <section class="panel output-panel">
-        <div class="output-head"><div><h2>Your editable outline</h2><p>Click anywhere in the document to revise it.</p></div><div class="actions" style="margin:0"><button class="secondary" id="copy">Copy</button><button class="secondary" id="chatReview">Review in ChatGPT</button><button class="secondary" id="download">Download Word</button><button class="secondary" id="print">Print / PDF</button></div></div><div class="progress-card" id="progressCard" hidden><div class="progress-top"><span>Rubric coverage</span><span id="progressCount">0 of 0</span></div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><p class="progress-copy" id="progressCopy">Mark a requirement when your outline addresses it.</p></div>
+        <div class="output-head"><div><h2>Your Editable Outline</h2><p>Click anywhere in the document to revise it.</p></div><div class="actions" style="margin:0"><button class="secondary" id="copy">Copy</button><button class="secondary" id="chatReview">Review in ChatGPT</button><button class="secondary" id="download">Download Word</button><button class="secondary" id="print">Print / PDF</button></div></div><div class="progress-card" id="progressCard" hidden><div class="progress-top"><span>Rubric coverage</span><span id="progressCount">0 of 0</span></div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><p class="progress-copy" id="progressCopy">Mark a requirement when your outline addresses it.</p></div>
         <article id="outline" class="outline" contenteditable="true" aria-label="Editable generated outline"><div class="placeholder">Your outline will appear here.<br>It will include a checklist of every requirement found in your rubric.</div></article>
         <div class="footnote">Use this as a planning tool. Verify requirements against your assignment sheet before submitting work.</div>
       </section>
