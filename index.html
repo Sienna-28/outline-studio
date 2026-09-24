@@ -12,6 +12,9 @@
     header { display:flex; justify-content:space-between; align-items:center; gap:22px; padding:0 0 25px; border-bottom:1px solid var(--ink); }
     .brand { font-size:15px; letter-spacing:.09em; font-weight:700; text-transform:uppercase; }
     .brand b { color:var(--red); }
+    .account-button { background:white; color:var(--ink); border-color:var(--ink); padding:9px 12px; font-size:12px; }
+    .account-button:hover { background:#fff7f7; color:var(--red); }
+    .header-tools { display:flex; align-items:center; gap:10px; }
     .menu-wrap { position:relative; }
     .menu-button { width:42px; height:38px; padding:8px; display:grid; place-content:center; gap:4px; background:white; border:1px solid var(--ink); }
     .menu-button span { display:block; width:20px; height:2px; background:var(--ink); }
@@ -81,13 +84,21 @@
     .requirement input { width:16px; height:16px; accent-color:var(--red); margin-top:2px; flex:0 0 auto; }
     .privacy { margin:16px 0 0; color:var(--muted); font-size:12px; line-height:1.45; }
     .empty-note { font-size:13px; color:var(--red); min-height:18px; margin-top:10px; }
+    .account-modal { display:none; position:fixed; z-index:10; inset:0; background:rgba(18,18,18,.42); padding:24px; align-items:center; justify-content:center; }
+    .account-modal.open { display:flex; }
+    .account-dialog { width:min(430px,100%); background:white; border:1px solid var(--ink); box-shadow:8px 8px 0 #dedad3; padding:28px; }
+    .account-dialog h2 { margin-bottom:7px; }
+    .account-dialog p { color:var(--muted); font-size:13px; line-height:1.5; }
+    .account-dialog label { margin-top:16px; }
+    .account-dialog .actions { justify-content:space-between; }
+    .account-close { float:right; padding:5px 8px; background:white; color:var(--ink); border-color:var(--line); }
     @media (max-width:820px) { .hero,.grid { grid-template-columns:1fr; gap:28px; } .hero { padding-top:38px; } .outline { padding:28px 23px; } }
     @media print { body{background:white}.wrap{padding:0}.input-panel,header,.hero,.output-head,.footnote{display:none}.panel{border:0}.output-panel{min-height:0}.outline{padding:0}.requirement{background:white} }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <header><div class="brand">Outline <b>Studio</b></div><div class="menu-wrap"><button class="menu-button" id="menuButton" aria-label="Open assignment options" aria-expanded="false"><span></span><span></span><span></span></button><aside class="menu" id="menu"><h3>Academic level</h3><select id="academicLevel"><option>High school</option><option selected>Undergraduate</option><option>Graduate</option><option>Advanced research</option></select><p class="menu-note">This adjusts the tone prompt in new outlines. Your choices stay on this device.</p><h3>Previous outlines</h3><div class="saved-list" id="savedList"></div></aside></div></header>
+    <header><div class="brand">Outline <b>Studio</b></div><div class="header-tools"><button class="account-button" id="accountButton">Sign In</button><div class="menu-wrap"><button class="menu-button" id="menuButton" aria-label="Open assignment options" aria-expanded="false"><span></span><span></span><span></span></button><aside class="menu" id="menu"><h3>Academic level</h3><select id="academicLevel"><option>High school</option><option selected>Undergraduate</option><option>Graduate</option><option>Advanced research</option></select><p class="menu-note">This adjusts the tone prompt in new outlines. Your choices stay on this device.</p><h3>Previous outlines</h3><div class="saved-list" id="savedList"></div></aside></div></div></header>
     <section class="hero">
       <div><div class="eyebrow">Build your starting point</div><h1>Turn the Rubric Into a Plan You Can Write From.</h1><p class="lede">Paste the assignment requirements, add any useful context, and create an organized, editable outline that keeps every requirement in view.</p></div>
       <aside class="rules"><h2>Made for academic work</h2><p>Clear structure, neutral formatting, and room for your ideas. The resulting outline stays fully editable, so it can become your own work.</p></aside>
@@ -98,7 +109,7 @@
         <label for="title">Assignment title</label><input id="title" placeholder="Example: Comparative Literary Analysis">
         <label for="assignmentType">Assignment type</label><select id="assignmentType"><option value="essay">Essay or Paper</option><option value="research">Research Paper</option><option value="lab">Lab Report</option><option value="presentation">Presentation</option><option value="speech">Speech</option><option value="custom">Custom Assignment</option></select><label for="rubric">Paste the rubric or requirements</label><textarea id="rubric" placeholder="Paste the full rubric here. Include instructions, required sections, sources, length, and grading criteria."></textarea><div class="upload-row"><label class="upload-label">Upload rubric file<input type="file" id="rubricFile" accept=".pdf,.docx,.txt,.md,.csv,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/csv"></label><span class="file-name" id="fileName">PDF, Word, or text file</span></div><p class="hint">The uploaded text will appear above so you can review or edit it before generating your outline.</p>
         <label for="context">Additional details, optional</label><textarea id="context" style="min-height:100px" placeholder="Topic, text or sources you chose, your argument, instructor notes, or anything else the outline should consider."></textarea>
-        <div class="actions"><button id="generate">Generate my outline</button><button class="secondary" id="demo">Load example</button></div><p class="privacy">Your rubric and outlines are stored only in this browser unless you choose to download them.</p><p class="empty-note" id="message"></p>
+        <div class="actions"><button id="generate">Generate my outline</button><button class="secondary" id="demo">Load example</button><button class="secondary" id="saveAccount">Save to My Account</button></div><p class="privacy">Sign in to save outlines privately to your account. Your work is not visible to other students.</p><p class="empty-note" id="message"></p>
       </section>
       <section class="panel output-panel">
         <div class="output-head"><div><h2>Your Editable Outline</h2><p>Click anywhere in the document to revise it.</p></div><div class="actions" style="margin:0"><button class="secondary" id="copy">Copy</button><span class="chat-review-wrap"><button class="secondary" id="chatReview">Copy Review Prompt</button><span class="chat-hint" id="chatStatus">Copies prompt → paste in ChatGPT</span></span><button class="secondary" id="download">Download Word</button><button class="secondary" id="print">Print / PDF</button></div></div><div class="progress-card" id="progressCard" hidden><div class="progress-top"><span>Rubric coverage</span><span id="progressCount">0 of 0</span></div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><p class="progress-copy" id="progressCopy">Mark a requirement when your outline addresses it.</p></div>
@@ -107,14 +118,14 @@
       </section>
     </main>
   </div>
+  <div class="account-modal" id="accountModal" aria-hidden="true"><section class="account-dialog" role="dialog" aria-modal="true" aria-labelledby="accountTitle"><button class="account-close" id="accountClose" aria-label="Close sign-in">×</button><h2 id="accountTitle">Save Your Work Privately</h2><p id="accountDescription">Create a free account or sign in to keep your outlines private and available on this device.</p><label for="accountEmail">Email</label><input id="accountEmail" type="email" autocomplete="email" placeholder="you@example.com"><label for="accountPassword">Password</label><input id="accountPassword" type="password" autocomplete="current-password" placeholder="At least 6 characters"><p class="empty-note" id="accountMessage"></p><div class="actions"><button id="signIn">Sign In</button><button class="secondary" id="signUp">Create Account</button><button class="secondary" id="signOut" hidden>Sign Out</button></div></section></div>
 <script>
   const $ = id => document.getElementById(id);
-  const STORAGE_KEY = 'outline-studio-history';
   const LEVEL_KEY = 'outline-studio-level';
-  function historyItems() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } }
-  function renderHistory() { const items=historyItems(); const list=$('savedList'); list.innerHTML=items.length ? items.map((item,i)=>'<button class="saved-item" data-index="'+i+'"><strong>'+escapeHtml(item.title)+'</strong><br><span>'+escapeHtml(item.level)+' · '+escapeHtml(item.date)+'</span></button>').join('') : '<p class="saved-empty">No outlines saved yet. Generated outlines will appear here.</p>'; list.querySelectorAll('[data-index]').forEach(button=>button.addEventListener('click',()=>loadHistory(Number(button.dataset.index)))); }
-  function saveHistory(title,rubric,context,level) { const items=historyItems(); items.unshift({title,rubric,context,level,date:new Date().toLocaleDateString()}); localStorage.setItem(STORAGE_KEY,JSON.stringify(items.slice(0,8))); renderHistory(); }
-  function loadHistory(index) { const item=historyItems()[index]; if(!item) return; $('title').value=item.title; $('rubric').value=item.rubric; $('context').value=item.context; $('academicLevel').value=item.level; $('menu').classList.remove('open'); $('menuButton').setAttribute('aria-expanded','false'); buildOutline(false); }
+  function historyItems() { return window.outlineStudioFirebase?.items || []; }
+  function renderHistory() { const items=historyItems(); const list=$('savedList'); list.innerHTML=items.length ? items.map((item,i)=>'<button class="saved-item" data-index="'+i+'"><strong>'+escapeHtml(item.title)+'</strong><br><span>'+escapeHtml(item.level || 'Undergraduate')+' · '+escapeHtml(item.date || 'Saved outline')+'</span></button>').join('') : '<p class="saved-empty">No private outlines saved yet. Sign in to save your work.</p>'; list.querySelectorAll('[data-index]').forEach(button=>button.addEventListener('click',()=>loadHistory(Number(button.dataset.index)))); }
+  function saveHistory(title,rubric,context,level) { const firebase=window.outlineStudioFirebase; if (!firebase?.user) { renderHistory(); return; } firebase.save({title,rubric,context,level,assignmentType:$('assignmentType').value,outlineHtml:$('outline').innerHTML}).catch(()=>{$('message').textContent='Your outline could not be saved. Check your connection and try again.';}); }
+  function loadHistory(index) { const item=historyItems()[index]; if(!item) return; $('title').value=item.title || ''; $('rubric').value=item.rubric || ''; $('context').value=item.context || ''; $('academicLevel').value=item.level || 'Undergraduate'; $('assignmentType').value=item.assignmentType || 'essay'; $('menu').classList.remove('open'); $('menuButton').setAttribute('aria-expanded','false'); if(item.outlineHtml) { $('outline').innerHTML=item.outlineHtml; setupProgress(); $('message').textContent='Private outline loaded.'; } else buildOutline(false); }
   const escapeHtml = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function splitRequirements(text) {
     const lines = text.replace(/\r/g,'').split(/\n+/).flatMap(line => line.split(/(?<=[.!?])\s+(?=[A-Z])/));
@@ -178,6 +189,7 @@
   renderHistory();
   function setupProgress() { const checks=[...document.querySelectorAll('.requirement-check')]; const card=$('progressCard'); card.hidden=!checks.length; const update=()=>{const done=checks.filter(check=>check.checked).length; const total=checks.length; const percent=total?Math.round(done/total*100):0; $('progressFill').style.width=percent+'%'; $('progressCount').textContent=done+' of '+total; $('progressCopy').textContent=done===total ? 'All rubric requirements are marked addressed. Review your work before submitting.' : (total-done)+' requirement'+(total-done===1?' remains':'s remain')+' to review.';}; checks.forEach(check=>check.addEventListener('change',update)); update(); }
   $('generate').addEventListener('click', buildOutline);
+  $('saveAccount').addEventListener('click',()=>{ const outline=$('outline').innerText.trim(); if (!outline || outline.startsWith('Your outline will appear here')) { $('message').textContent='Generate an outline before saving it.'; return; } saveHistory($('title').value.trim() || 'Untitled assignment',$('rubric').value.trim(),$('context').value.trim(),$('academicLevel').value); $('message').textContent=window.outlineStudioFirebase?.user ? 'Saving your private outline...' : 'Sign in first to save your outline privately.'; if(!window.outlineStudioFirebase?.user) $('accountButton').click(); });
   $('demo').addEventListener('click', () => { $('title').value='Comparative Literary Analysis'; $('rubric').value='Write a 1,200 to 1,500 word comparative literary analysis. Include a clear thesis in the introduction. Analyze at least two passages from each text. Use three scholarly sources in MLA format. Address a meaningful similarity and difference between the texts. Include a works cited page.'; $('context').value='Texts: Frankenstein and The Strange Case of Dr. Jekyll and Mr. Hyde. Focus: the consequences of unchecked ambition.'; buildOutline(); });
   $('copy').addEventListener('click', async () => { const text=$('outline').innerText; if (!text.trim()) return; await navigator.clipboard.writeText(text); $('copy').textContent='Copied'; setTimeout(()=>$('copy').textContent='Copy',1400); });
   $('chatReview').addEventListener('click', async () => {
@@ -217,5 +229,22 @@ ${outline}`;
   $('download').addEventListener('click',()=>{ const text=$('outline').innerText; if(!text.trim()) return; const blob=new Blob(['<html><body><pre style="font-family:Georgia,serif;white-space:pre-wrap">'+escapeHtml(text)+'</pre></body></html>'],{type:'application/msword'}); const url=URL.createObjectURL(blob); const link=document.createElement('a'); link.href=url; link.download=($('title').value.trim()||'outline')+'.doc'; link.click(); URL.revokeObjectURL(url); });
   $('print').addEventListener('click',()=>window.print());
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>\n<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>\n</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>\n<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>\n<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, collection, doc, setDoc, getDocs, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+const app=initializeApp({apiKey:'AIzaSyDF69WqIRrEGKRj7c08ZQHxf652n_S_Hek',authDomain:'outline-studio.firebaseapp.com',projectId:'outline-studio',storageBucket:'outline-studio.firebasestorage.app',messagingSenderId:'635090113359',appId:'1:635090113359:web:2123300b2aa9337b47eb3a'});
+const auth=getAuth(app), db=getFirestore(app);
+const fb={user:null,items:[],async loadHistory(){if(!this.user){this.items=[];window.renderHistory();return;}const records=await getDocs(query(collection(db,'users',this.user.uid,'outlines'),orderBy('updatedAt','desc'),limit(20)));this.items=records.docs.map(r=>({id:r.id,...r.data(),date:new Date(r.data().updatedAt||Date.now()).toLocaleDateString()}));window.renderHistory();},async save(record){if(!this.user)throw Error('Sign in required');await setDoc(doc(collection(db,'users',this.user.uid,'outlines')),{...record,updatedAt:Date.now()});await this.loadHistory();window.$('message').textContent='Saved privately to your account.';}};
+window.outlineStudioFirebase=fb;
+const modal=window.$('accountModal'),accountButton=window.$('accountButton'),accountMessage=window.$('accountMessage'),accountEmail=window.$('accountEmail'),accountPassword=window.$('accountPassword');
+const show=()=>{modal.classList.add('open');modal.setAttribute('aria-hidden','false');accountMessage.textContent='';accountEmail.focus();},hide=()=>{modal.classList.remove('open');modal.setAttribute('aria-hidden','true');};
+const friendly=e=>({'auth/invalid-credential':'That email or password is not correct.','auth/email-already-in-use':'An account already uses that email. Try signing in instead.','auth/weak-password':'Choose a password with at least 6 characters.','auth/invalid-email':'Enter a valid email address.'}[e.code]||'Something went wrong. Please try again.');
+accountButton.addEventListener('click',()=>fb.user?signOut(auth):show());window.$('accountClose').addEventListener('click',hide);modal.addEventListener('click',e=>{if(e.target===modal)hide();});
+window.$('signIn').addEventListener('click',async()=>{try{accountMessage.textContent='';await signInWithEmailAndPassword(auth,accountEmail.value.trim(),accountPassword.value);hide();}catch(e){accountMessage.textContent=friendly(e);}});
+window.$('signUp').addEventListener('click',async()=>{try{accountMessage.textContent='';await createUserWithEmailAndPassword(auth,accountEmail.value.trim(),accountPassword.value);hide();}catch(e){accountMessage.textContent=friendly(e);}});
+window.$('signOut').addEventListener('click',()=>signOut(auth));
+onAuthStateChanged(auth,async user=>{fb.user=user;accountButton.textContent=user?'Sign Out':'Sign In';window.$('accountTitle').textContent=user?'Your Account':'Save Your Work Privately';window.$('accountDescription').textContent=user?'You are signed in as '+user.email+'. Your outlines are private to this account.':'Create a free account or sign in to keep your outlines private and available on this device.';window.$('signIn').hidden=!!user;window.$('signUp').hidden=!!user;window.$('signOut').hidden=!user;await fb.loadHistory();});
+</script>
+</body>
 </html>
