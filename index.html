@@ -236,7 +236,9 @@ ${outline}`;
   $('download').addEventListener('click',()=>{ const text=$('outline').innerText; if(!text.trim()) return; const blob=new Blob(['<html><body><pre style="font-family:Georgia,serif;white-space:pre-wrap">'+escapeHtml(text)+'</pre></body></html>'],{type:'application/msword'}); const url=URL.createObjectURL(blob); const link=document.createElement('a'); link.href=url; link.download=($('title').value.trim()||'outline')+'.doc'; link.click(); URL.revokeObjectURL(url); });
   $('print').addEventListener('click',()=>window.print());
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>\n<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>\n<script type="module">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+<script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getFirestore, collection, doc, setDoc, getDocs, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
