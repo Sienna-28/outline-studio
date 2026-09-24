@@ -66,6 +66,14 @@
     .requirement { background:#fff5f5; border-left:2px solid var(--red); padding:8px 10px; margin:8px 0; font:14px/1.45 var(--sans); }
     .requirements-title { margin:28px 0 8px; font:700 13px var(--sans); letter-spacing:.06em; text-transform:uppercase; }
     .footnote { padding:14px 27px; color:var(--muted); border-top:1px solid var(--line); font-size:12px; }
+    .progress-card { padding:16px 27px; border-bottom:1px solid var(--line); background:#fcfbf9; }
+    .progress-top { display:flex; justify-content:space-between; gap:12px; font:700 12px var(--sans); letter-spacing:.06em; text-transform:uppercase; }
+    .progress-track { height:8px; background:#e2dfd9; margin-top:10px; }
+    .progress-fill { height:100%; width:0; background:var(--red); transition:width .2s ease; }
+    .progress-copy { margin:8px 0 0; color:var(--muted); font-size:12px; line-height:1.4; }
+    .requirement { display:flex; gap:9px; align-items:flex-start; }
+    .requirement input { width:16px; height:16px; accent-color:var(--red); margin-top:2px; flex:0 0 auto; }
+    .privacy { margin:16px 0 0; color:var(--muted); font-size:12px; line-height:1.45; }
     .empty-note { font-size:13px; color:var(--red); min-height:18px; margin-top:10px; }
     @media (max-width:820px) { .hero,.grid { grid-template-columns:1fr; gap:28px; } .hero { padding-top:38px; } .outline { padding:28px 23px; } }
     @media print { body{background:white}.wrap{padding:0}.input-panel,header,.hero,.output-head,.footnote{display:none}.panel{border:0}.output-panel{min-height:0}.outline{padding:0}.requirement{background:white} }
@@ -82,12 +90,12 @@
       <section class="panel input-panel">
         <h2>Start with the assignment</h2>
         <label for="title">Assignment title</label><input id="title" placeholder="Example: Comparative Literary Analysis">
-        <label for="rubric">Paste the rubric or requirements</label><textarea id="rubric" placeholder="Paste the full rubric here. Include instructions, required sections, sources, length, and grading criteria."></textarea><div class="upload-row"><label class="upload-label">Upload rubric file<input type="file" id="rubricFile" accept=".pdf,.docx,.txt,.md,.csv,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/csv"></label><span class="file-name" id="fileName">PDF, Word, or text file</span></div><p class="hint">The uploaded text will appear above so you can review or edit it before generating your outline.</p>
+        <label for="assignmentType">Assignment type</label><select id="assignmentType"><option value="essay">Essay or paper</option><option value="research">Research paper</option><option value="lab">Lab report</option><option value="presentation">Presentation</option><option value="speech">Speech</option><option value="custom">Custom assignment</option></select><label for="rubric">Paste the rubric or requirements</label><textarea id="rubric" placeholder="Paste the full rubric here. Include instructions, required sections, sources, length, and grading criteria."></textarea><div class="upload-row"><label class="upload-label">Upload rubric file<input type="file" id="rubricFile" accept=".pdf,.docx,.txt,.md,.csv,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/csv"></label><span class="file-name" id="fileName">PDF, Word, or text file</span></div><p class="hint">The uploaded text will appear above so you can review or edit it before generating your outline.</p>
         <label for="context">Additional details, optional</label><textarea id="context" style="min-height:100px" placeholder="Topic, text or sources you chose, your argument, instructor notes, or anything else the outline should consider."></textarea>
-        <div class="actions"><button id="generate">Generate my outline</button><button class="secondary" id="demo">Load example</button></div><p class="empty-note" id="message"></p>
+        <div class="actions"><button id="generate">Generate my outline</button><button class="secondary" id="demo">Load example</button></div><p class="privacy">Your rubric and outlines are stored only in this browser unless you choose to download them.</p><p class="empty-note" id="message"></p>
       </section>
       <section class="panel output-panel">
-        <div class="output-head"><div><h2>Your editable outline</h2><p>Click anywhere in the document to revise it.</p></div><button class="secondary" id="copy">Copy outline</button></div>
+        <div class="output-head"><div><h2>Your editable outline</h2><p>Click anywhere in the document to revise it.</p></div><div class="actions" style="margin:0"><button class="secondary" id="copy">Copy</button><button class="secondary" id="download">Download Word</button><button class="secondary" id="print">Print / PDF</button></div></div><div class="progress-card" id="progressCard" hidden><div class="progress-top"><span>Rubric coverage</span><span id="progressCount">0 of 0</span></div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><p class="progress-copy" id="progressCopy">Mark a requirement when your outline addresses it.</p></div>
         <article id="outline" class="outline" contenteditable="true" aria-label="Editable generated outline"><div class="placeholder">Your outline will appear here.<br>It will include a checklist of every requirement found in your rubric.</div></article>
         <div class="footnote">Use this as a planning tool. Verify requirements against your assignment sheet before submitting work.</div>
       </section>
@@ -113,20 +121,22 @@
     const rubric = $('rubric').value.trim();
     const context = $('context').value.trim();
     const level = $('academicLevel').value;
+    const assignmentType = $('assignmentType').selectedOptions[0].text;
     const message = $('message');
     if (!rubric) { message.textContent='Paste the rubric first so the outline can include its requirements.'; $('rubric').focus(); return; }
     const requirements = splitRequirements(rubric);
     const details = contextPoints(context);
-    const requirementsHtml = requirements.length ? requirements.map(r=>'<div class="requirement">□ '+escapeHtml(r)+'</div>').join('') : '<div class="requirement">□ Review the rubric and add each requirement here.</div>';
+    const requirementsHtml = requirements.length ? requirements.map((r,i)=>'<label class="requirement"><input type="checkbox" class="requirement-check" data-requirement="'+i+'"><span>'+escapeHtml(r)+'</span></label>').join('') : '<label class="requirement"><input type="checkbox" class="requirement-check"><span>Review the rubric and add each requirement here.</span></label>';
     const contextHtml = details.length ? details.map(d=>'<li>'+escapeHtml(d)+'</li>').join('') : '<li><span class="blank">Add your topic, key claim, evidence, or instructor guidance.</span></li>';
     $('outline').innerHTML = '<h2 class="doc-title">'+escapeHtml(title)+'</h2><p class="doc-subtitle">Working outline. Replace the prompts with your own ideas and evidence.</p>'
-      +'<section class="section"><h3>1. Planning notes</h3><ul><li>Academic level: <strong>'+escapeHtml(level)+'</strong></li>'+contextHtml+'</ul></section>'
+      +'<section class="section"><h3>1. Planning notes</h3><ul><li>Assignment type: <strong>'+escapeHtml(assignmentType)+'</strong></li><li>Academic level: <strong>'+escapeHtml(level)+'</strong></li>'+contextHtml+'</ul></section>'
       +'<section class="section"><h3>2. Introduction</h3><ul><li>Opening context: <span class="blank">Introduce the topic and why it matters.</span></li><li>Thesis or central claim: <span class="blank">State your position or purpose.</span></li><li>Roadmap: <span class="blank">Preview the main points in the order you will develop them.</span></li></ul></section>'
       +'<section class="section"><h3>3. Main point one</h3><ul><li>Topic sentence: <span class="blank">First reason, theme, or finding.</span></li><li>Evidence or example: <span class="blank">Add a source, quotation, data point, or detail.</span></li><li>Analysis: <span class="blank">Explain how the evidence supports your thesis.</span></li></ul></section>'
       +'<section class="section"><h3>4. Main point two</h3><ul><li>Topic sentence: <span class="blank">Second reason, theme, or finding.</span></li><li>Evidence or example: <span class="blank">Add support.</span></li><li>Analysis: <span class="blank">Connect this point back to your central claim.</span></li></ul></section>'
       +'<section class="section"><h3>5. Main point three or counterpoint</h3><ul><li>Topic sentence: <span class="blank">Add another important point, limitation, or opposing view.</span></li><li>Evidence and response: <span class="blank">Use evidence and explain its significance.</span></li></ul></section>'
       +'<section class="section"><h3>6. Conclusion</h3><ul><li>Synthesize: <span class="blank">Show how the main points work together.</span></li><li>Closing significance: <span class="blank">Leave the reader with the key implication or takeaway.</span></li></ul></section>'
       +'<div class="requirements-title">Rubric requirement checklist</div>'+requirementsHtml;
+    setupProgress();
     if (save) saveHistory(title,rubric,context,level);
     message.textContent = requirements.length ? requirements.length+' requirement'+(requirements.length===1?'':'s')+' added to your checklist.' : 'Outline created. Add the rubric requirements to the checklist.';
   }
@@ -161,9 +171,12 @@
   $('academicLevel').value=localStorage.getItem(LEVEL_KEY)||'Undergraduate';
   $('academicLevel').addEventListener('change',()=>localStorage.setItem(LEVEL_KEY,$('academicLevel').value));
   renderHistory();
+  function setupProgress() { const checks=[...document.querySelectorAll('.requirement-check')]; const card=$('progressCard'); card.hidden=!checks.length; const update=()=>{const done=checks.filter(check=>check.checked).length; const total=checks.length; const percent=total?Math.round(done/total*100):0; $('progressFill').style.width=percent+'%'; $('progressCount').textContent=done+' of '+total; $('progressCopy').textContent=done===total ? 'All rubric requirements are marked addressed. Review your work before submitting.' : (total-done)+' requirement'+(total-done===1?' remains':'s remain')+' to review.';}; checks.forEach(check=>check.addEventListener('change',update)); update(); }
   $('generate').addEventListener('click', buildOutline);
   $('demo').addEventListener('click', () => { $('title').value='Comparative Literary Analysis'; $('rubric').value='Write a 1,200 to 1,500 word comparative literary analysis. Include a clear thesis in the introduction. Analyze at least two passages from each text. Use three scholarly sources in MLA format. Address a meaningful similarity and difference between the texts. Include a works cited page.'; $('context').value='Texts: Frankenstein and The Strange Case of Dr. Jekyll and Mr. Hyde. Focus: the consequences of unchecked ambition.'; buildOutline(); });
-  $('copy').addEventListener('click', async () => { const text=$('outline').innerText; if (!text.trim()) return; await navigator.clipboard.writeText(text); $('copy').textContent='Copied'; setTimeout(()=>$('copy').textContent='Copy outline',1400); });
+  $('copy').addEventListener('click', async () => { const text=$('outline').innerText; if (!text.trim()) return; await navigator.clipboard.writeText(text); $('copy').textContent='Copied'; setTimeout(()=>$('copy').textContent='Copy',1400); });
+  $('download').addEventListener('click',()=>{ const text=$('outline').innerText; if(!text.trim()) return; const blob=new Blob(['<html><body><pre style="font-family:Georgia,serif;white-space:pre-wrap">'+escapeHtml(text)+'</pre></body></html>'],{type:'application/msword'}); const url=URL.createObjectURL(blob); const link=document.createElement('a'); link.href=url; link.download=($('title').value.trim()||'outline')+'.doc'; link.click(); URL.revokeObjectURL(url); });
+  $('print').addEventListener('click',()=>window.print());
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>\n<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>\n</body>
 </html>
