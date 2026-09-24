@@ -184,6 +184,7 @@
   }
   $('rubricFile').addEventListener('change', importRubric);
   $('menuButton').addEventListener('click',()=>{ const open=$('menu').classList.toggle('open'); $('menuButton').setAttribute('aria-expanded',String(open)); });
+  document.addEventListener('click',event=>{ const wrap=document.querySelector('.menu-wrap'); if (!wrap.contains(event.target)) { $('menu').classList.remove('open'); $('menuButton').setAttribute('aria-expanded','false'); } });
   $('academicLevel').value=localStorage.getItem(LEVEL_KEY)||'Undergraduate';
   $('academicLevel').addEventListener('change',()=>localStorage.setItem(LEVEL_KEY,$('academicLevel').value));
   renderHistory();
