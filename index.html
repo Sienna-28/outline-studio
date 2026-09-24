@@ -57,7 +57,7 @@
     .output-panel { min-height:670px; display:flex; flex-direction:column; }
     .output-head { display:block; padding:27px; border-bottom:1px solid var(--line); }
     .output-head p { margin:6px 0 0; color:var(--muted); font-size:13px; }
-    .output-head > .actions { width:100%; margin:18px 0 0 !important; display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:8px; }
+    .output-head > .actions { width:100%; margin:18px 0 0 !important; display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:8px; align-items:start; }
     .output-head > .actions button { min-width:0; padding:10px 8px; font-size:11px; white-space:nowrap; }
     .chat-review-wrap { display:grid; gap:5px; }
     .chat-review-wrap button { width:100%; }
@@ -112,7 +112,7 @@
         <div class="actions"><button id="generate">Generate my outline</button><button class="secondary" id="demo">Load example</button><button class="secondary" id="saveAccount">Save to My Account</button></div><p class="privacy">Sign in to save outlines privately to your account. Your work is not visible to other students.</p><p class="empty-note" id="message"></p>
       </section>
       <section class="panel output-panel">
-        <div class="output-head"><div><h2>Your Editable Outline</h2><p>Click anywhere in the document to revise it.</p></div><div class="actions" style="margin:0"><button class="secondary" id="copy">Copy</button><span class="chat-review-wrap"><button class="secondary" id="chatReview">Copy Review Prompt</button><span class="chat-hint" id="chatStatus">Copies prompt → paste in ChatGPT</span></span><button class="secondary" id="download">Download Word</button><button class="secondary" id="print">Print / PDF</button></div></div><div class="progress-card" id="progressCard" hidden><div class="progress-top"><span>Rubric coverage</span><span id="progressCount">0 of 0</span></div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><p class="progress-copy" id="progressCopy">Mark a requirement when your outline addresses it.</p></div>
+        <div class="output-head"><div><h2>Your Editable Outline</h2><p>Click anywhere in the document to revise it.</p></div><div class="actions" style="margin:0"><button class="secondary" id="copy">Copy</button><span class="chat-review-wrap"><button class="secondary" id="chatReview">Copy Review Prompt</button><span class="chat-hint" id="chatStatus" aria-live="polite"></span></span><button class="secondary" id="download">Download Word</button><button class="secondary" id="print">Print / PDF</button></div></div><div class="progress-card" id="progressCard" hidden><div class="progress-top"><span>Rubric coverage</span><span id="progressCount">0 of 0</span></div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><p class="progress-copy" id="progressCopy">Mark a requirement when your outline addresses it.</p></div>
         <article id="outline" class="outline" contenteditable="true" aria-label="Editable generated outline"><div class="placeholder">Your outline will appear here.<br>It will include a checklist of every requirement found in your rubric.</div></article>
         <div class="footnote">Use this as a planning tool. Verify requirements against your assignment sheet before submitting work.</div>
       </section>
@@ -221,7 +221,7 @@ STUDENT OUTLINE:
 ${outline}`;
     try {
       await navigator.clipboard.writeText(prompt);
-      $('chatStatus').textContent='Copied. Paste in ChatGPT.';
+      $('chatStatus').textContent='Prompt and outline copied. Paste into ChatGPT for feedback.';
       window.open('https://chatgpt.com/', '_blank', 'noopener');
     } catch {
       $('chatStatus').textContent='Could not copy. Try again.';
