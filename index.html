@@ -101,7 +101,7 @@
         <div class="actions"><button id="generate">Generate my outline</button><button class="secondary" id="demo">Load example</button></div><p class="privacy">Your rubric and outlines are stored only in this browser unless you choose to download them.</p><p class="empty-note" id="message"></p>
       </section>
       <section class="panel output-panel">
-        <div class="output-head"><div><h2>Your Editable Outline</h2><p>Click anywhere in the document to revise it.</p></div><div class="actions" style="margin:0"><button class="secondary" id="copy">Copy</button><span class="chat-review-wrap"><button class="secondary" id="chatReview">Copy Review Prompt</button><span class="chat-hint">Then paste in ChatGPT</span></span><button class="secondary" id="download">Download Word</button><button class="secondary" id="print">Print / PDF</button></div></div><div class="progress-card" id="progressCard" hidden><div class="progress-top"><span>Rubric coverage</span><span id="progressCount">0 of 0</span></div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><p class="progress-copy" id="progressCopy">Mark a requirement when your outline addresses it.</p></div>
+        <div class="output-head"><div><h2>Your Editable Outline</h2><p>Click anywhere in the document to revise it.</p></div><div class="actions" style="margin:0"><button class="secondary" id="copy">Copy</button><span class="chat-review-wrap"><button class="secondary" id="chatReview">Copy Review Prompt</button><span class="chat-hint" id="chatStatus">Copies prompt → paste in ChatGPT</span></span><button class="secondary" id="download">Download Word</button><button class="secondary" id="print">Print / PDF</button></div></div><div class="progress-card" id="progressCard" hidden><div class="progress-top"><span>Rubric coverage</span><span id="progressCount">0 of 0</span></div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><p class="progress-copy" id="progressCopy">Mark a requirement when your outline addresses it.</p></div>
         <article id="outline" class="outline" contenteditable="true" aria-label="Editable generated outline"><div class="placeholder">Your outline will appear here.<br>It will include a checklist of every requirement found in your rubric.</div></article>
         <div class="footnote">Use this as a planning tool. Verify requirements against your assignment sheet before submitting work.</div>
       </section>
@@ -208,10 +208,10 @@ STUDENT OUTLINE:
 ${outline}`;
     try {
       await navigator.clipboard.writeText(prompt);
-      $('message').textContent='Your complete review prompt is copied. In the ChatGPT tab, paste it into the message box and send it for rubric-coverage guidance.';
+      $('chatStatus').textContent='Copied. Paste in ChatGPT.';
       window.open('https://chatgpt.com/', '_blank', 'noopener');
     } catch {
-      $('message').textContent='Could not copy automatically. Use Copy to copy your outline, then open ChatGPT manually.';
+      $('chatStatus').textContent='Could not copy. Try again.';
     }
   });
   $('download').addEventListener('click',()=>{ const text=$('outline').innerText; if(!text.trim()) return; const blob=new Blob(['<html><body><pre style="font-family:Georgia,serif;white-space:pre-wrap">'+escapeHtml(text)+'</pre></body></html>'],{type:'application/msword'}); const url=URL.createObjectURL(blob); const link=document.createElement('a'); link.href=url; link.download=($('title').value.trim()||'outline')+'.doc'; link.click(); URL.revokeObjectURL(url); });
