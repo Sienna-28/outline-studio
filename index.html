@@ -111,8 +111,7 @@
   function loadHistory(index) { const item=historyItems()[index]; if(!item) return; $('title').value=item.title; $('rubric').value=item.rubric; $('context').value=item.context; $('academicLevel').value=item.level; $('menu').classList.remove('open'); $('menuButton').setAttribute('aria-expanded','false'); buildOutline(false); }
   const escapeHtml = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function splitRequirements(text) {
-    const lines = text.replace(/\r/g,'').split(/
-+/).flatMap(line => line.split(/(?<=[.!?])\s+(?=[A-Z])/));
+    const lines = text.replace(/\r/g,'').split(/\n+/).flatMap(line => line.split(/(?<=[.!?])\s+(?=[A-Z])/));
     return lines.map(x=>x.trim().replace(/^[-*•\d.)\s]+/,'')).filter(x=>x.length>12).filter((x,i,a)=>a.indexOf(x)===i).slice(0,14);
   }
   function contextPoints(text) { return splitRequirements(text).slice(0,4); }
