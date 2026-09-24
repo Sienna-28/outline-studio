@@ -40,7 +40,7 @@
     input, textarea { width:100%; border:1px solid #aaa59e; background:#fff; color:var(--ink); border-radius:0; font:15px/1.48 var(--sans); padding:12px; }
     input:focus, textarea:focus { outline:2px solid var(--red); outline-offset:1px; border-color:var(--red); }
     textarea { min-height:175px; resize:vertical; }
-    .hint { margin:7px 0 0; color:var(--muted); font-size:12px; line-height:1.45; }
+    .hint { margin:7px 0 0; color:var(--muted); font-size:12px; line-height:1.45; }\n    .upload-row { display:flex; align-items:center; gap:12px; margin:10px 0 2px; }\n    .upload-label { display:inline-flex; align-items:center; border:1px solid var(--ink); padding:9px 12px; cursor:pointer; font:700 12px var(--sans); }\n    .upload-label:hover { color:var(--red); border-color:var(--red); }\n    .upload-label input { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }\n    .file-name { color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:25px; }
     button { appearance:none; border:1px solid var(--ink); background:var(--ink); color:white; cursor:pointer; padding:12px 16px; font:700 13px var(--sans); }
     button:hover { background:var(--red); border-color:var(--red); }
@@ -77,7 +77,7 @@
       <section class="panel input-panel">
         <h2>Start with the assignment</h2>
         <label for="title">Assignment title</label><input id="title" placeholder="Example: Comparative Literary Analysis">
-        <label for="rubric">Paste the rubric or requirements</label><textarea id="rubric" placeholder="Paste the full rubric here. Include instructions, required sections, sources, length, and grading criteria."></textarea><p class="hint">Tip: bullets, numbered criteria, and complete sentences all work well.</p>
+        <label for="rubric">Paste the rubric or requirements</label><textarea id="rubric" placeholder="Paste the full rubric here. Include instructions, required sections, sources, length, and grading criteria."></textarea><div class="upload-row"><label class="upload-label">Upload rubric file<input type="file" id="rubricFile" accept=".pdf,.docx,.txt,.md,.csv,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/csv"></label><span class="file-name" id="fileName">PDF, Word, or text file</span></div><p class="hint">The uploaded text will appear above so you can review or edit it before generating your outline.</p>
         <label for="context">Additional details, optional</label><textarea id="context" style="min-height:100px" placeholder="Topic, text or sources you chose, your argument, instructor notes, or anything else the outline should consider."></textarea>
         <div class="actions"><button id="generate">Generate my outline</button><button class="secondary" id="demo">Load example</button></div><p class="empty-note" id="message"></p>
       </section>
@@ -125,6 +125,33 @@
     if (save) saveHistory(title,rubric,context,level);
     message.textContent = requirements.length ? requirements.length+' requirement'+(requirements.length===1?'':'s')+' added to your checklist.' : 'Outline created. Add the rubric requirements to the checklist.';
   }
+  async function extractPdf(file) {
+    const data = new Uint8Array(await file.arrayBuffer());
+    const pdf = await pdfjsLib.getDocument({data}).promise;
+    const pages = [];
+    for (let n=1; n<=pdf.numPages; n++) { const page=await pdf.getPage(n); const text=await page.getTextContent(); pages.push(text.items.map(item=>item.str).join(' ')); }
+    return pages.join('\n\n');
+  }
+  async function importRubric(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    $('fileName').textContent = 'Reading ' + file.name + '...';
+    try {
+      let text;
+      const extension = file.name.split('.').pop().toLowerCase();
+      if (extension === 'pdf') text = await extractPdf(file);
+      else if (extension === 'docx') text = (await mammoth.extractRawText({arrayBuffer: await file.arrayBuffer()})).value;
+      else text = await file.text();
+      if (!text.trim()) throw new Error('No readable text found');
+      $('rubric').value = text.trim();
+      $('fileName').textContent = file.name + ' added';
+      $('message').textContent = 'Rubric imported. Review it, then generate your outline.';
+    } catch {
+      $('fileName').textContent = 'Could not read this file';
+      $('message').textContent = 'Try a text-based PDF, Word document, or plain-text file, or paste the rubric directly.';
+    }
+  }
+  $('rubricFile').addEventListener('change', importRubric);
   $('menuButton').addEventListener('click',()=>{ const open=$('menu').classList.toggle('open'); $('menuButton').setAttribute('aria-expanded',String(open)); });
   $('academicLevel').value=localStorage.getItem(LEVEL_KEY)||'Undergraduate';
   $('academicLevel').addEventListener('change',()=>localStorage.setItem(LEVEL_KEY,$('academicLevel').value));
@@ -133,5 +160,5 @@
   $('demo').addEventListener('click', () => { $('title').value='Comparative Literary Analysis'; $('rubric').value='Write a 1,200 to 1,500 word comparative literary analysis. Include a clear thesis in the introduction. Analyze at least two passages from each text. Use three scholarly sources in MLA format. Address a meaningful similarity and difference between the texts. Include a works cited page.'; $('context').value='Texts: Frankenstein and The Strange Case of Dr. Jekyll and Mr. Hyde. Focus: the consequences of unchecked ambition.'; buildOutline(); });
   $('copy').addEventListener('click', async () => { const text=$('outline').innerText; if (!text.trim()) return; await navigator.clipboard.writeText(text); $('copy').textContent='Copied'; setTimeout(()=>$('copy').textContent='Copy outline',1400); });
 </script>
-</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>\n<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>\n</body>
 </html>
