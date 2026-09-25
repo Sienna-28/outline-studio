@@ -136,9 +136,31 @@
   function renameHistory(index) { const item=historyItems()[index]; const title=window.prompt('Rename this outline:',item?.title || ''); if(title?.trim()) window.outlineStudioFirebase.rename(item.id,title.trim()); }
   function deleteHistory(index) { const item=historyItems()[index]; if(item && window.confirm('Delete "'+item.title+'"? This cannot be undone.')) window.outlineStudioFirebase.remove(item.id); }
   const escapeHtml = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function cleanRequirement(value) {
+    return value.replace(/^\s*(?:[-*•▪◦]+|\(?\d+[.)]|[A-Za-z][.)])\s*/,'').replace(/^\s*(?:criterion|criteria|requirement)\s*:\s*/i,'').replace(/\s+/g,' ').trim();
+  }
   function splitRequirements(text) {
-    const lines = text.replace(/\r/g,'').split(/\n+/).flatMap(line => line.split(/(?<=[.!?])\s+(?=[A-Z])/));
-    return lines.map(x=>x.trim().replace(/^[-*•\d.)\s]+/,'')).filter(x=>x.length>12).filter((x,i,a)=>a.indexOf(x)===i).slice(0,14);
+    const actionWords = /\b(must|should|required|require|include|use|write|analy[sz]e|address|provide|cite|submit|format|compare|contrast|explain|describe|discuss|evaluate|demonstrate|support|organize|revise|proofread|present|create|identify|at least|no more than|word count|page(?:s)?|source(?:s)?|works cited|references|introduction|conclusion|thesis)\b/i;
+    const bullet = /^\s*(?:[-*•▪◦]+|\(?\d+[.)]|[A-Za-z][.)])\s+/;
+    const lines = text.replace(/\r/g,'').split(/\n+/).map(line=>line.trim()).filter(Boolean);
+    const found = [];
+    const add = (raw, forced=false) => {
+      const item = cleanRequirement(raw);
+      if (item.length < 8 || item.length > 500) return;
+      if ((forced || actionWords.test(item)) && !found.some(existing=>existing.toLowerCase()===item.toLowerCase())) found.push(item);
+    };
+    lines.forEach(line => {
+      const isBullet = bullet.test(line);
+      const pieces = isBullet ? [line] : line.split(/(?<=[.!?;])\s+(?=[A-Z0-9])/);
+      pieces.forEach(piece=>add(piece,isBullet));
+    });
+    if (!found.length) {
+      lines.flatMap(line=>line.split(/(?<=[.!?;])\s+(?=[A-Z0-9])/)).forEach(piece=>add(piece,true));
+    }
+    return found.slice(0,24);
+  }
+  function contextPoints(text) {
+    return text.replace(/\r/g,'').split(/\n+|(?<=[.!?])\s+/).map(cleanRequirement).filter(item=>item.length>8).slice(0,4);
   }
   function contextPoints(text) { return splitRequirements(text).slice(0,4); }
   function buildOutline(save=true) {
@@ -160,10 +182,10 @@
       +'<section class="section"><h3>4. Main point two</h3><ul><li>Topic sentence: <span class="blank">Second reason, theme, or finding.</span></li><li>Evidence or example: <span class="blank">Add support.</span></li><li>Analysis: <span class="blank">Connect this point back to your central claim.</span></li></ul></section>'
       +'<section class="section"><h3>5. Main point three or counterpoint</h3><ul><li>Topic sentence: <span class="blank">Add another important point, limitation, or opposing view.</span></li><li>Evidence and response: <span class="blank">Use evidence and explain its significance.</span></li></ul></section>'
       +'<section class="section"><h3>6. Conclusion</h3><ul><li>Synthesize: <span class="blank">Show how the main points work together.</span></li><li>Closing significance: <span class="blank">Leave the reader with the key implication or takeaway.</span></li></ul></section>'
-      +'<div class="requirements-title">Rubric requirement checklist</div>'+requirementsHtml;
+      +'<div class="requirements-title">Rubric requirement checklist</div><p class="hint">Generated from explicit rubric criteria. Compare it with the original rubric and edit any item that needs clarification.</p>'+requirementsHtml;
     setupProgress();
     if (save) { if(window.outlineStudioFirebase?.user) window.outlineStudioFirebase.currentOutlineId=null; saveHistory(title,rubric,context,level); }
-    message.textContent = requirements.length ? requirements.length+' requirement'+(requirements.length===1?'':'s')+' added to your checklist.' : 'Outline created. Add the rubric requirements to the checklist.';
+    message.textContent = requirements.length ? requirements.length+' rubric requirement'+(requirements.length===1?'':'s')+' added to your checklist. Review the original rubric for any wording that needs adjustment.' : 'Outline created. Add the rubric requirements to the checklist.';
   }
   async function extractPdf(file) {
     const data = new Uint8Array(await file.arrayBuffer());
